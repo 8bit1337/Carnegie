@@ -1,0 +1,5 @@
+ASSUMPTIONS
+- The program will be called with the proper number (1) and type (string) of parameter.
+- The number of samples will be static at 200, and not a parameter
+- A sensorid is akin to a serial number, and is therefore unique to each sensor.
+- Since there are only 15,615 unique IDs in the file of 22,981 records, there is a one to many relationship between sensors and sensortypes.
