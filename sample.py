@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 def main(argv):
   #Variable Assumptions
   samples=200   #the total number of samples I want in the export
-  minsamples=5  #the minimum number of samples I think I should take, regardless of population size
+  minsamples=3  #the minimum number of samples I think I should take, regardless of population size
+  sampled_df=pd.DataFrame(columns=['sensorid','sensortype'])  #dataframe to contain our sampled sensors
   
   #Open the file and get the data into a dataframe
   try:  
@@ -27,14 +28,12 @@ def main(argv):
   
   #Here we randomize the index, so that we can add a minimum number of sensors to our final dataframe
   sensors_df.reindex(index=np.random.permutation(sensors_df.index))
-  sensors_df.to_csv('merged_types.csv')
+#  sensors_df.to_csv('merged_types.csv')
   
   #if there are less than 200 sensors in the file, just return everything
   if numsensors== 200:
-    final_df=sensors_df
+    sampled_df=sampled_df.append(sensors_df)
   else:
-    sampled_df=pd.DataFrame(columns=['sensorid','sensortype'])
-    
     #Group by sensor type, so we can get a sense of what our sample population should look like
     #In this dataframe, 'sensorid' actuall contains a count of sensor, not actual IDs
     #After I've calculated the weights I don't need the counts any longer
@@ -44,9 +43,9 @@ def main(argv):
     for types in types_df['sensortype']:
       min_df=sensors_df.query("sensortype=='"+types+"'").sample(n=minsamples)
       sampled_df=sampled_df.append(min_df, ignore_index=True)
-      samples-=minsamples
+      samples-=min_df.size  #we need to reduce the number of overall samples we require as we take minimums
       
-    #I'm removing this column for the merged_df join
+    #Removing unnecessary column for this next step
     del types_df['sensorid']
 
     #Now we merge the two dataframes, to give me a weighting for each sensortype
@@ -54,27 +53,41 @@ def main(argv):
   
     #Using the weights above, sample the remaining sensors and add to our sampled_df
     sampled_df=sampled_df.append(merged_df.sample(n=samples, weights=merged_df.weights))
-    sampled_df.to_csv('sampled.csv')
+#    sampled_df.to_csv('sampled.csv')
   
-    #Final data presentation:
-    #  - split the sensortype field back into it's own rows, to match input file
-    #  - remove unnecessary columns
-    #  - make the sensorid the index so that the to_csv function gives us a clean csv
-    split_df=sampled_df['sensortype'].str.split(' ').apply(pd.Series, 1).stack()
-    split_df.index = split_df.index.droplevel(-1)
-    split_df.name='sensortype'
-    del sampled_df['sensortype']
-    del sampled_df['weights']
-    final_df=sampled_df.join(split_df).set_index('sensorid')
+  #Final data presentation:
+  #  - print a graph showing what %s we have of each combination of type
+  #  - split the sensortype field back into it's own rows, to match input file
+  #  - remove unnecessary columns
+  #  - make the sensorid the index so that the to_csv function gives us a clean csv
+  
+  #Create the graph before we switch the data to it's final format
+  
+  report_df=sampled_df.groupby(['sensortype']).size().reset_index(name='counts')
+  labels=tuple(report_df['sensortype'].tolist())
+  counts=tuple(report_df['counts'].tolist())
+  n=len(labels)
+  index=np.arange(n)
+  
+  fig, ax = plt.subplots()
+  plt.bar(index, counts)
+  plt.xticks(index, labels, rotation='vertical')
+  plt.xlabel('Types')
+  plt.ylabel('Count')
+  for i in range(n):
+    plt.text(i-.1, counts[i]+.5, "{0:0}".format(counts[i]))
+  plt.show()
     
-  #Now that we've created our final_dataframe, export it
+  return True
+  
+  #Now create our csv for export
+  split_df=sampled_df['sensortype'].str.split(' ').apply(pd.Series, 1).stack()
+  split_df.index = split_df.index.droplevel(-1)
+  split_df.name='sensortype'
+  del sampled_df['sensortype']
+  del sampled_df['weights']
+  final_df=sampled_df.join(split_df).set_index('sensorid')
   final_df.to_csv('output.csv')
-#
-#output results to bar chart
-#  plt.bar(x, y, width, color="blue")
-
-#  print(final_df.groupby('sensortype').apply(list))
-
 
   return True
     
