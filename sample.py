@@ -2,7 +2,6 @@
 
 import pandas as pd
 import numpy as np
-from random import shuffle
 from sys import exit as errorMsg, argv as sys_argv
 import matplotlib.pyplot as plt
 
@@ -14,8 +13,7 @@ def main(argv):
   
   #Open the file and get the data into a dataframe
   try:  
-#    inputfile = argv[1]
-    input_file='iot-sensors.csv'
+    input_file = argv[1]
     input_df=pd.read_csv(input_file, sep=',', header=0)
   except:
     errorMsg('Could not open provided file. ')
@@ -28,7 +26,6 @@ def main(argv):
   
   #Here we randomize the index, so that we can add a minimum number of sensors to our final dataframe
   sensors_df.reindex(index=np.random.permutation(sensors_df.index))
-#  sensors_df.to_csv('merged_types.csv')
   
   #if there are less than 200 sensors in the file, just return everything
   if numsensors== 200:
@@ -53,7 +50,6 @@ def main(argv):
   
     #Using the weights above, sample the remaining sensors and add to our sampled_df
     sampled_df=sampled_df.append(merged_df.sample(n=samples, weights=merged_df.weights))
-#    sampled_df.to_csv('sampled.csv')
   
   #Final data presentation:
   #  - print a graph showing what %s we have of each combination of type
@@ -77,8 +73,6 @@ def main(argv):
   for i in range(n):
     plt.text(i-.1, counts[i]+.5, "{0:0}".format(counts[i]))
   plt.show()
-    
-  return True
   
   #Now create our csv for export
   split_df=sampled_df['sensortype'].str.split(' ').apply(pd.Series, 1).stack()

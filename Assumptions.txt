@@ -1,5 +1,17 @@
 ASSUMPTIONS
 - The program will be called with the proper number (1) and type (string) of parameter.
-- The number of samples will be static at 200, and not a parameter
+- The number of samples required for the output will be static at 200, and not passed as a parameter
 - A sensorid is akin to a serial number, and is therefore unique to each sensor.
-- Since there are only 15,615 unique IDs in the file of 22,981 records, there is a one to many relationship between sensors and sensortypes.
+- Since there are only 15,615 unique sensorids in the file of 22,981 records, there is a one to many relationship between sensors and sensor types.
+- I assumed that the reason there is a many to one relationship between sensors and sensor types would be that a given sensor might be paired with different functionalities depending on it's final usage
+- As such, I will produce an output file that contains 200 unique sensorids, but more than 200 records (since there are many sensors that are of more than one type)
+- When looking at how many different many to one relationships there are, I saw 6.  I'll call these macro sensor types.
+- If we preserve the overall percentage of the total of a given macro sensor type versus the 15,615 sensors, we would end up with zero units tested in at least one circumstance
+- Therefore I have hard coded that we should always test at least 3 of each macro sensor types, before sampling the rest for test subjects
+- If a macro sensor type has less than 3 units, we will test them all.
+- I also assumed that for the purposes of this exercise, trapping only for an existing csv file was necessary, based on the stated 'don't go out of your way to worry about more than 200 sensor types'
+
+FINAL NOTES
+- I also assumed that for this 'project' that I was not to ask any follow up questions.  
+- My first question would have been about whether or not my 'macro sensor type' assumption was accurate, or if there was another reason the same sensorid appears multiple times in the file, associated with different types
+- I wrote in Python 3.6.3 using Anaconda's Spyder 3.2.4., within a Windows environment

@@ -1,4 +1,0 @@
-STEPS
-- brought file into Tableau to get an idea of what the data looked like
-- confirmed the total number of records matched the number of sensors we were supposed to receive
-- 5 types, see 'File Analysis.png'
